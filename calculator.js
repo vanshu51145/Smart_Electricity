@@ -1,4 +1,3 @@
-
 // ==========================================
 // EcoVolt - Calculator JS (Part 1)
 // ==========================================
@@ -6,8 +5,12 @@
 // Store Appliances
 let appliances = [];
 
-// Approximate domestic demo rates (₹/unit)
+// ==========================================
+// Electricity Rates
+// ==========================================
+
 const electricityRates = {
+
     "Andhra Pradesh": 7.10,
     "Arunachal Pradesh": 5.20,
     "Assam": 6.70,
@@ -44,44 +47,101 @@ const electricityRates = {
     "Lakshadweep": 6.20,
     "Puducherry": 6.70,
     "Andaman and Nicobar Islands": 6.00
+
 };
 
 // ==========================================
-// Slab-wise Bill Calculation
+// Save Dashboard Data
 // ==========================================
 
-function calculateAmount(units) {
+function saveData() {
+
+    localStorage.setItem(
+        "appliances",
+        JSON.stringify(appliances)
+    );
+
+    let totalUnits = 0;
+    let totalAppliances = 0;
+
+    appliances.forEach(function(item){
+
+        totalUnits += item.units;
+        totalAppliances += item.quantity;
+
+    });
+
+    localStorage.setItem(
+        "dashboardUnits",
+        totalUnits.toFixed(2)
+    );
+
+    localStorage.setItem(
+        "dashboardBill",
+        calculateAmount(totalUnits).toFixed(2)
+    );
+
+    localStorage.setItem(
+        "dashboardAppliances",
+        totalAppliances
+    );
+
+    localStorage.setItem(
+        "highestAppliance",
+        getHighestConsumption()
+    );
+
+}
+
+// ==========================================
+// Slab Calculation
+// ==========================================
+
+function calculateAmount(units){
 
     let amount = 0;
 
-    if (units <= 100) {
+    if(units <= 100){
 
         amount = units * 3;
 
-    } else if (units <= 200) {
+    }
 
-        amount = (100 * 3) + ((units - 100) * 5);
+    else if(units <= 200){
 
-    } else if (units <= 300) {
+        amount =
+        (100*3)+
+        ((units-100)*5);
 
-        amount = (100 * 3) +
-                 (100 * 5) +
-                 ((units - 200) * 7);
+    }
 
-    } else if (units <= 500) {
+    else if(units <= 300){
 
-        amount = (100 * 3) +
-                 (100 * 5) +
-                 (100 * 7) +
-                 ((units - 300) * 8.5);
+        amount =
+        (100*3)+
+        (100*5)+
+        ((units-200)*7);
 
-    } else {
+    }
 
-        amount = (100 * 3) +
-                 (100 * 5) +
-                 (100 * 7) +
-                 (200 * 8.5) +
-                 ((units - 500) * 10);
+    else if(units <= 500){
+
+        amount =
+        (100*3)+
+        (100*5)+
+        (100*7)+
+        ((units-300)*8.5);
+
+    }
+
+    else{
+
+        amount =
+        (100*3)+
+        (100*5)+
+        (100*7)+
+        (200*8.5)+
+        ((units-500)*10);
 
     }
 
@@ -93,17 +153,21 @@ function calculateAmount(units) {
 // Add Appliance
 // ==========================================
 
-function addAppliance() {
+function addAppliance(){
 
-    const appliance = document.getElementById("appliance");
-    const quantity = document.getElementById("quantity");
-    const hours = document.getElementById("hours");
+    const appliance =
+    document.getElementById("appliance");
 
-    if (
-        appliance.value === "" ||
-        quantity.value === "" ||
-        hours.value === ""
-    ) {
+    const quantity =
+    document.getElementById("quantity");
+
+    const hours =
+    document.getElementById("hours");
+
+    if(
+        appliance.value==="" ||
+        quantity.value==="" ||
+        hours.value===""){
 
         alert("Please fill all fields.");
         return;
@@ -113,14 +177,14 @@ function addAppliance() {
     const qty = Number(quantity.value);
     const hrs = Number(hours.value);
 
-    if (qty <= 0) {
+    if(qty<=0){
 
-        alert("Quantity should be greater than 0.");
+        alert("Quantity must be greater than 0.");
         return;
 
     }
 
-    if (hrs <= 0 || hrs > 24) {
+    if(hrs<=0 || hrs>24){
 
         alert("Hours must be between 1 and 24.");
         return;
@@ -128,31 +192,32 @@ function addAppliance() {
     }
 
     const applianceName =
-        appliance.options[appliance.selectedIndex].text;
+    appliance.options[
+        appliance.selectedIndex
+    ].text;
 
-    const power = Number(appliance.value);
+    const power =
+    Number(appliance.value);
 
     const dailyUnits =
-        (power * qty * hrs) / 1000;
+    (power * qty * hrs)/1000;
 
     const monthlyUnits =
-        dailyUnits * 30;
+    dailyUnits * 30;
 
     appliances.push({
 
         name: applianceName,
-
         power: power,
-
         quantity: qty,
-
         hours: hrs,
-
         units: monthlyUnits
 
     });
 
     displayTable();
+
+    saveData();
 
     appliance.selectedIndex = 0;
     quantity.value = "";
@@ -165,14 +230,15 @@ function addAppliance() {
 
 function displayTable() {
 
-    const tableBody = document.getElementById("tableBody");
+    const tableBody =
+        document.getElementById("tableBody");
 
     tableBody.innerHTML = "";
 
     let totalUnits = 0;
     let totalAppliances = 0;
 
-    appliances.forEach(function (item, index) {
+    appliances.forEach(function(item, index){
 
         totalUnits += item.units;
         totalAppliances += item.quantity;
@@ -211,8 +277,6 @@ onclick="deleteRow(${index})">
 
     });
 
-    // Dashboard Update
-
     document.getElementById("totalAppliances").innerHTML =
         totalAppliances;
 
@@ -222,10 +286,11 @@ onclick="deleteRow(${index})">
     document.getElementById("estimatedBill").innerHTML =
         "₹ " + calculateAmount(totalUnits).toFixed(2);
 
-    // Highest Consumption Appliance
+    // document.getElementById("Appliance").innerHTML =
+    //     getHighestConsumption();
 
-    document.getElementById("highestAppliance").innerHTML =
-        getHighestConsumption();
+    // Save Dashboard
+    saveData();
 
 }
 
@@ -235,23 +300,25 @@ onclick="deleteRow(${index})">
 // Delete Appliance
 // ==========================================
 
-function deleteRow(index) {
+function deleteRow(index){
 
-    appliances.splice(index, 1);
+    appliances.splice(index,1);
 
     displayTable();
+
+    saveData();
 
 }
 
 
 
 // ==========================================
-// Highest Consumption
+// Highest Consumption Appliance
 // ==========================================
 
-function getHighestConsumption() {
+function getHighestConsumption(){
 
-    if (appliances.length === 0) {
+    if(appliances.length===0){
 
         return "-";
 
@@ -279,7 +346,7 @@ function getHighestConsumption() {
 // Clear Table
 // ==========================================
 
-function clearTable() {
+function clearTable(){
 
     if(appliances.length===0){
 
@@ -289,9 +356,19 @@ function clearTable() {
 
     }
 
-    if(confirm("Clear all appliances?")){
+    if(confirm("Are you sure you want to clear all appliances?")){
 
-        appliances=[];
+        appliances = [];
+
+        localStorage.removeItem("appliances");
+        localStorage.removeItem("dashboardUnits");
+        localStorage.removeItem("dashboardBill");
+        localStorage.removeItem("dashboardAppliances");
+        localStorage.removeItem("highestAppliance");
+        localStorage.removeItem("totalUnits");
+        localStorage.removeItem("estimatedBill");
+        localStorage.removeItem("selectedState");
+        localStorage.removeItem("connectionType");
 
         displayTable();
 
@@ -307,15 +384,15 @@ function clearTable() {
 
 function resetDashboard(){
 
-    document.getElementById("tableBody").innerHTML="";
+    document.getElementById("tableBody").innerHTML = "";
 
-    document.getElementById("totalAppliances").innerHTML="0";
+    document.getElementById("totalAppliances").innerHTML = "0";
 
-    document.getElementById("totalUnits").innerHTML="0";
+    document.getElementById("totalUnits").innerHTML = "0";
 
-    document.getElementById("estimatedBill").innerHTML="₹0";
+    document.getElementById("estimatedBill").innerHTML = "₹ 0";
 
-    document.getElementById("highestAppliance").innerHTML="-";
+    document.getElementById("highestAppliance").innerHTML = "-";
 
 }
 // ==========================================
@@ -332,7 +409,8 @@ function calculateBill() {
 
     }
 
-    const state = document.getElementById("state").value;
+    const state =
+        document.getElementById("state").value;
 
     const connectionType =
         document.getElementById("connectionType").value;
@@ -361,9 +439,10 @@ function calculateBill() {
 
     });
 
-    let totalBill = calculateAmount(totalUnits);
+    let totalBill =
+        calculateAmount(totalUnits);
 
-    // Commercial Example (20% Extra)
+    // Commercial Bill
 
     if(connectionType === "commercial"){
 
@@ -371,19 +450,41 @@ function calculateBill() {
 
     }
 
-    // Redirect to Bill Page
+    // Save Bill Data
+
+    localStorage.setItem(
+        "totalUnits",
+        totalUnits.toFixed(2)
+    );
+
+    localStorage.setItem(
+        "estimatedBill",
+        totalBill.toFixed(2)
+    );
+
+    localStorage.setItem(
+        "selectedState",
+        state
+    );
+
+    localStorage.setItem(
+        "connectionType",
+        connectionType
+    );
+
+    // Redirect
 
     window.location.href =
 
-    "bill.html?" +
+        "bill.html?" +
 
-    "units=" + totalUnits.toFixed(2) +
+        "units=" + totalUnits.toFixed(2) +
 
-    "&bill=" + totalBill.toFixed(2) +
+        "&bill=" + totalBill.toFixed(2) +
 
-    "&state=" + encodeURIComponent(state) +
+        "&state=" + encodeURIComponent(state) +
 
-    "&connection=" + connectionType;
+        "&connection=" + connectionType;
 
 }
 
@@ -394,6 +495,14 @@ function calculateBill() {
 // ==========================================
 
 function exportReport(){
+
+    if(appliances.length===0){
+
+        alert("No data available.");
+
+        return;
+
+    }
 
     window.print();
 
@@ -423,6 +532,59 @@ function resetForm(){
 
 window.onload = function(){
 
+    // Restore Appliance List
+
+    const savedData =
+        localStorage.getItem("appliances");
+
+    if(savedData){
+
+        appliances =
+            JSON.parse(savedData);
+
+    }
+
     displayTable();
+
+    // Restore Dashboard
+
+    document.getElementById("totalUnits").innerHTML =
+        localStorage.getItem("dashboardUnits") || "0";
+
+    document.getElementById("estimatedBill").innerHTML =
+        "₹ " +
+        (localStorage.getItem("dashboardBill") || "0");
+
+    document.getElementById("totalAppliances").innerHTML =
+        localStorage.getItem("dashboardAppliances") || "0";
+
+    document.getElementById("highestAppliance").innerHTML =
+        localStorage.getItem("highestAppliance") || "-";
+
+    // Restore State
+
+    const savedState =
+        localStorage.getItem("selectedState");
+
+    if(savedState &&
+       document.getElementById("state")){
+
+        document.getElementById("state").value =
+            savedState;
+
+    }
+
+    // Restore Connection Type
+
+    const savedConnection =
+        localStorage.getItem("connectionType");
+
+    if(savedConnection &&
+       document.getElementById("connectionType")){
+
+        document.getElementById("connectionType").value =
+            savedConnection;
+
+    }
 
 };
