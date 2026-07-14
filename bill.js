@@ -1,155 +1,220 @@
 // =======================================
 // EcoVolt Bill Page
+// Part 1
 // =======================================
 
-// =======================================
-// Load Saved Data
-// =======================================
+// Current Bill Data (Calculator se aayega)
 
-const totalUnits =
-    localStorage.getItem("totalUnits") || "0";
+let totalUnits =
+localStorage.getItem("totalUnits") || "0";
 
-const totalBill =
-    localStorage.getItem("estimatedBill") || "0";
+let totalBill =
+localStorage.getItem("estimatedBill") || "0";
 
-const state =
-    localStorage.getItem("selectedState") || "-";
+let state =
+localStorage.getItem("selectedState") || "-";
 
-const connection =
-    localStorage.getItem("connectionType") || "-";
-
-
-// =======================================
-// Fill Dashboard Cards
-// =======================================
-
-document.getElementById("totalUnits").innerHTML =
-    totalUnits + " Units";
-
-document.getElementById("totalBill").innerHTML =
-    "₹ " + totalBill;
-
-
-// =======================================
-// Fill Summary Table
-// =======================================
-
-document.getElementById("summaryUnits").innerHTML =
-    totalUnits + " Units";
-
-document.getElementById("summaryBill").innerHTML =
-    "₹ " + totalBill;
-
-document.getElementById("summaryState").innerHTML =
-    state;
-
-document.getElementById("summaryConnection").innerHTML =
-    connection.charAt(0).toUpperCase() +
-    connection.slice(1);
-
-
-// =======================================
-// Fill Form Fields
-// =======================================
-
-const stateInput =
-    document.getElementById("billState");
-
-if (stateInput) {
-
-    stateInput.value = state;
-
-}
-
-const connectionInput =
-    document.getElementById("connectionType");
-
-if (connectionInput) {
-
-    connectionInput.value =
-        connection.charAt(0).toUpperCase() +
-        connection.slice(1);
-
-}
-// =======================================
-// Current Date
-// =======================================
-
-const today = new Date();
-
-const monthInput =
-    document.querySelector('input[type="month"]');
-
-if (monthInput) {
-
-    monthInput.value =
-        today.getFullYear() +
-        "-" +
-        String(today.getMonth() + 1).padStart(2, "0");
-
-}
-
-const dateInput =
-    document.querySelector('input[type="date"]');
-
-if (dateInput) {
-
-    dateInput.valueAsDate = today;
-
-}
+let connection =
+localStorage.getItem("connectionType") || "-";
 
 
 // =======================================
 // Generate Bill Number
 // =======================================
 
-let billNumber =
-    localStorage.getItem("billNumber");
+function generateBillNumber(){
 
-if (!billNumber) {
+    return "EV-" +
+    Math.floor(100000 + Math.random() * 900000);
 
-    billNumber =
-        "EV-" +
-        Math.floor(
-            100000 + Math.random() * 900000
-        );
+}
+
+let billNumber = generateBillNumber();
+
+
+// =======================================
+// Badge
+// =======================================
+
+document.querySelector(".badge.bg-success").innerHTML =
+"Bill No : " + billNumber;
+
+
+// =======================================
+// Dashboard Blank
+// =======================================
+
+document.getElementById("totalUnits").innerHTML =
+"--";
+
+document.getElementById("totalBill").innerHTML =
+"₹ --";
+
+
+// =======================================
+// Summary Blank
+// =======================================
+
+document.getElementById("summaryBillNo").innerHTML =
+"--";
+
+document.getElementById("summaryCustomer").innerHTML =
+"--";
+
+document.getElementById("summaryState").innerHTML =
+"--";
+
+document.getElementById("summaryConnection").innerHTML =
+"--";
+
+document.getElementById("summaryUnits").innerHTML =
+"--";
+
+document.getElementById("summaryBill").innerHTML =
+"₹ --";
+
+
+// =======================================
+// Form
+// =======================================
+
+const customer =
+document.getElementById("customerName");
+
+const monthInput =
+document.getElementById("billingMonth");
+
+const dateInput =
+document.getElementById("billingDate");
+
+const stateInput =
+document.getElementById("billState");
+
+const connectionInput =
+document.getElementById("connectionType");
+
+
+// Blank Customer
+
+customer.value = "";
+
+
+// Current Month
+
+const today = new Date();
+
+monthInput.value =
+today.getFullYear() +
+"-" +
+String(today.getMonth()+1).padStart(2,"0");
+
+
+// Current Date
+
+dateInput.value =
+today.toISOString().split("T")[0];
+
+
+// State & Connection
+
+stateInput.value = state;
+
+connectionInput.value =
+connection.charAt(0).toUpperCase() +
+connection.slice(1);
+
+
+// =======================================
+// History Array
+// =======================================
+
+let history =
+JSON.parse(
+localStorage.getItem("billHistory")
+) || [];
+// =======================================
+// Save Bill History
+// =======================================
+
+function saveHistory(){
+
+    history.push({
+
+        billNo: billNumber,
+
+        customer: customer.value,
+
+        state: state,
+
+        connection: connection,
+
+        units: totalUnits,
+
+        bill: totalBill,
+
+        month: monthInput.value,
+
+        date: dateInput.value
+
+    });
 
     localStorage.setItem(
-        "billNumber",
-        billNumber
+
+        "billHistory",
+
+        JSON.stringify(history)
+
     );
 
 }
 
-const badge =
-    document.querySelector(".badge.bg-success");
-
-if (badge) {
-
-    badge.innerHTML =
-        "Bill No : " + billNumber;
-
-}
-
 
 // =======================================
-// Customer Name Auto Save
+// Display History Table
 // =======================================
 
-const customerName =
-    document.getElementById("customerName");
+function displayHistory(){
 
-if (customerName) {
+    const table =
+    document.getElementById("historyTable");
 
-    customerName.value =
-        localStorage.getItem("customerName") || "";
+    table.innerHTML = "";
 
-    customerName.addEventListener("input", function () {
+    history.forEach(function(item,index){
 
-        localStorage.setItem(
-            "customerName",
-            this.value
-        );
+        table.innerHTML += `
+
+<tr>
+
+<td>${item.billNo}</td>
+
+<td>${item.customer}</td>
+
+<td>${item.state}</td>
+
+<td>${item.connection}</td>
+
+<td>${item.units} Units</td>
+
+<td>₹ ${item.bill}</td>
+
+<td>${item.date}</td>
+
+<td>
+
+<button
+class="btn btn-danger btn-sm"
+onclick="deleteBill(${index})">
+
+<i class="bi bi-trash-fill"></i>
+
+</button>
+
+</td>
+
+</tr>
+
+`;
 
     });
 
@@ -157,80 +222,98 @@ if (customerName) {
 
 
 // =======================================
-// Consumer Number Auto Save
+// Delete Bill
 // =======================================
 
-const consumerNo =
-    document.getElementById("consumerNumber");
+function deleteBill(index){
 
-if (consumerNo) {
+    if(confirm("Delete this bill?")){
 
-    consumerNo.value =
-        localStorage.getItem("consumerNumber") || "";
-
-    consumerNo.addEventListener("input", function () {
+        history.splice(index,1);
 
         localStorage.setItem(
-            "consumerNumber",
-            this.value
+
+            "billHistory",
+
+            JSON.stringify(history)
+
         );
 
-    });
+        displayHistory();
 
-}
-// =======================================
-// Address Auto Save
-// =======================================
-
-const address =
-    document.getElementById("address");
-
-if (address) {
-
-    address.value =
-        localStorage.getItem("address") || "";
-
-    address.addEventListener("input", function () {
-
-        localStorage.setItem(
-            "address",
-            this.value
-        );
-
-    });
+    }
 
 }
 
 
 // =======================================
-// Meter Number Auto Save
+// Save Bill
 // =======================================
 
-const meterNo =
-    document.getElementById("meterNumber");
+function saveBill(){
 
-if (meterNo) {
+    if(customer.value.trim()===""){
 
-    meterNo.value =
-        localStorage.getItem("meterNumber") || "";
+        alert("Please enter Consumer Name.");
 
-    meterNo.addEventListener("input", function () {
+        return;
 
-        localStorage.setItem(
-            "meterNumber",
-            this.value
-        );
+    }
 
-    });
+    // Dashboard Update
+
+    document.getElementById("totalUnits").innerHTML =
+    totalUnits + " Units";
+
+    document.getElementById("totalBill").innerHTML =
+    "₹ " + totalBill;
+
+
+    // Summary Update
+
+    document.getElementById("summaryBillNo").innerHTML =
+    billNumber;
+
+    document.getElementById("summaryCustomer").innerHTML =
+    customer.value;
+
+    document.getElementById("summaryState").innerHTML =
+    state;
+
+    document.getElementById("summaryConnection").innerHTML =
+    connection.charAt(0).toUpperCase() +
+    connection.slice(1);
+
+    document.getElementById("summaryUnits").innerHTML =
+    totalUnits + " Units";
+
+    document.getElementById("summaryBill").innerHTML =
+    "₹ " + totalBill;
+
+
+    // Save History
+
+    saveHistory();
+
+    displayHistory();
+
+
+    alert("Bill Saved Successfully.");
+
+
+    // Generate Next Bill Number
+
+    billNumber = generateBillNumber();
+
+    document.querySelector(".badge.bg-success").innerHTML =
+    "Bill No : " + billNumber;
 
 }
-
-
 // =======================================
-// Download / Print Bill
+// Print Bill
 // =======================================
 
-function downloadBill() {
+function downloadBill(){
 
     window.print();
 
@@ -238,85 +321,96 @@ function downloadBill() {
 
 
 // =======================================
-// Print Button
+// Reset Form (Optional)
 // =======================================
 
-const printBtn =
-    document.getElementById("printBill");
+function resetBillForm(){
 
-if (printBtn) {
+    customer.value = "";
 
-    printBtn.addEventListener("click", function () {
+    monthInput.value =
+    today.getFullYear() +
+    "-" +
+    String(today.getMonth()+1).padStart(2,"0");
 
-        window.print();
-
-    });
+    dateInput.value =
+    today.toISOString().split("T")[0];
 
 }
 
 
 // =======================================
-// Clear Bill Data
+// Window Load
 // =======================================
 
-function clearBillData() {
+window.onload = function(){
 
-    if (!confirm("Are you sure you want to clear all bill data?")) {
+    // Dashboard Blank
 
-        return;
+    document.getElementById("totalUnits").innerHTML =
+    "--";
 
-    }
+    document.getElementById("totalBill").innerHTML =
+    "₹ --";
 
-    localStorage.removeItem("customerName");
-    localStorage.removeItem("consumerNumber");
-    localStorage.removeItem("meterNumber");
-    localStorage.removeItem("address");
 
-    localStorage.removeItem("billNumber");
+    // Summary Blank
 
-    localStorage.removeItem("totalUnits");
-    localStorage.removeItem("estimatedBill");
+    document.getElementById("summaryBillNo").innerHTML =
+    "--";
 
-    localStorage.removeItem("selectedState");
-    localStorage.removeItem("connectionType");
+    document.getElementById("summaryCustomer").innerHTML =
+    "--";
 
-    alert("Bill data cleared successfully.");
+    document.getElementById("summaryState").innerHTML =
+    "--";
 
-    location.reload();
+    document.getElementById("summaryConnection").innerHTML =
+    "--";
 
-}
+    document.getElementById("summaryUnits").innerHTML =
+    "--";
+
+    document.getElementById("summaryBill").innerHTML =
+    "₹ --";
+
+
+    // New Bill Number
+
+    billNumber = generateBillNumber();
+
+    document.querySelector(".badge.bg-success").innerHTML =
+    "Bill No : " + billNumber;
+
+
+    // Form Reset
+
+    customer.value = "";
+
+    monthInput.value =
+    today.getFullYear() +
+    "-" +
+    String(today.getMonth()+1).padStart(2,"0");
+
+    dateInput.value =
+    today.toISOString().split("T")[0];
+
+    stateInput.value = state;
+
+    connectionInput.value =
+    connection.charAt(0).toUpperCase() +
+    connection.slice(1);
+
+
+    // Show History Table
+
+    displayHistory();
+
+};
 
 
 // =======================================
-// Generate New Bill Number
-// =======================================
-
-function generateNewBill() {
-
-    const newBillNo =
-        "EV-" +
-        Math.floor(100000 + Math.random() * 900000);
-
-    localStorage.setItem(
-        "billNumber",
-        newBillNo
-    );
-
-    const badge =
-        document.querySelector(".badge.bg-success");
-
-    if (badge) {
-
-        badge.innerHTML =
-            "Bill No : " + newBillNo;
-
-    }
-
-}
-
-
-// =======================================
-// Page Loaded Successfully
+// Console
 // =======================================
 
 console.log("EcoVolt Bill Page Loaded Successfully");
